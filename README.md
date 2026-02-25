@@ -1,85 +1,47 @@
-# 👁️ Retinal OCT Image Classification - 8 Classes
-### High-Quality Multi-Class Dataset of OCT Images Across 8 Retinal Conditions
+# 👁️ Deteksi Penyakit Retinal OCT dengan Transfer Learning (DenseNet121)
 
-### 🔍 Overview
+Proyek Deep Learning ini berfokus pada klasifikasi citra medis **Retinal Optical Coherence Tomography (OCT)** untuk mendiagnosis 8 kondisi anatomi dan penyakit mata yang berbeda. Model ini dievaluasi dan dikembangkan sebagai bagian dari submission spesialisasi Deep Learning, dengan pencapaian akurasi di atas **95%**.
 
-The **Retinal OCT - 8 Classes** dataset contains **24,000 retinal OCT images** categorized into 8 retinal conditions. This dataset was compiled from multiple reputable sources and is designed to support research in **retinal disease classification** using machine learning models.
+## 📌 Deskripsi Proyek
+Diagnosis citra medis menuntut tingkat presisi yang tinggi dan kemampuan model untuk mengekstraksi fitur tekstur mikroskopis. Proyek ini mengimplementasikan teknik **Transfer Learning** menggunakan arsitektur bawaan ImageNet yang digabungkan dengan lapisan klasifikasi kustom (*double-funnel architecture*) untuk mencegah *overfitting* sekaligus mempertahankan kemampuan generalisasi pada data yang kompleks.
 
----
+## 📊 Dataset
+Dataset yang digunakan berasal dari dataset klinis Kermany et al., yang terdiri dari lebih dari **84.000 citra OCT**.
 
-## 📊 Dataset Structure
+Dataset dibagi secara dinamis ke dalam 3 proporsi utama dengan teknik *stratified split*:
+* **Data Latih (Training):** 80%
+* **Data Validasi (Validation):** 10%
+* **Data Uji (Testing):** 10%
 
-The dataset is split into three main subsets: **Train**, **Validation**, and **Test**. Each subset contains 8 subfolders corresponding to the retinal conditions. Images are named consistently, e.g., `drusen_test_1001.jpg`.
+**8 Kelas Klasifikasi:**
+1. AMD (Age-related Macular Degeneration)
+2. CNV (Choroidal Neovascularization)
+3. CSR (Central Serous Retinopathy)
+4. DME (Diabetic Macular Edema)
+5. DR (Diabetic Retinopathy)
+6. DRUSEN
+7. MH (Macular Hole)
+8. NORMAL (Retina Sehat)
 
-| **Subset**      | **Description**                                   |
-|-----------------|---------------------------------------------------|
-| **Train**       | Contains 18,400 images used for training the model|
-| **Validation**  | Contains 2,800 images used for model validation   |
-| **Test**        | Contains 2,800 images used for testing model performance |
+## 🧠 Arsitektur Model
+Model ini dibangun di atas fondasi Keras (TensorFlow 3.x) dengan memisahkan tahap *Feature Extraction* dan *Fine-Tuning*.
 
----
 
-## 📔 Classes
 
-The dataset consists of **8 retinal conditions**:
+* **Base Model (Feature Extractor):** `DenseNet121` (Bobot dikunci pada Tahap 1, dan dibuka pada Tahap 2 untuk *fine-tuning* dengan *Learning Rate* yang sangat kecil).
+* **Custom Classifier (Otak Model):**
+    * `GlobalAveragePooling2D`: Mengurangi dimensi spasial secara drastis untuk mencegah ledakan komputasi.
+    * `Dense(128, ReLU)` -> `Dropout(0.5)`
+    * `Dense(64, ReLU)` -> `Dropout(0.3)`
+    * `Dense(8, Softmax)`: Lapisan probabilitas akhir.
 
-| **Class**   | **Description**                                | **Train** | **Validation** | **Test** | **Total Images** |
-|-------------|------------------------------------------------|-----------|----------------|----------|------------------|
-| **AMD**     | Age-related Macular Degeneration                | 2,300     | 350            | 350      | 3,000            |
-| **CNV**     | Choroidal Neovascularization                   | 2,300     | 350            | 350      | 3,000            |
-| **CSR**     | Central Serous Retinopathy                     | 2,300     | 350            | 350      | 3,000            |
-| **DME**     | Diabetic Macular Edema                         | 2,300     | 350            | 350      | 3,000            |
-| **DR**      | Diabetic Retinopathy                           | 2,300     | 350            | 350      | 3,000            |
-| **DRUSEN**  | Yellow deposits under the retina               | 2,300     | 350            | 350      | 3,000            |
-| **MH**      | Macular Hole                                   | 2,300     | 350            | 350      | 3,000            |
-| **NORMAL**  | Healthy eyes with no abnormalities             | 2,300     | 350            | 350      | 3,000            |
-| **Total**   | -                                              | **18,400**| **2,800**      | **2,800**| **24,000**        |
+## 📈 Performa dan Evaluasi
+Pelatihan dilakukan dengan memanfaatkan *callbacks* `EarlyStopping` dan `ModelCheckpoint` untuk memastikan model menyimpan metrik terbaiknya.
+* **Training Accuracy:** ~96%
+* **Validation/Test Accuracy:** > 95%
 
-**Total Images**: 24,000  
-**Format**: JPEG  
-**Image Dimensions**: Images are not uniform and vary in size.
-
----
-
-## 📂 Folder Structure
-
-Here’s how the dataset is organized:
-
-| **Subset**      | **Subfolders (Classes)**                        | **Naming Convention**                     |
-|-----------------|------------------------------------------------|-------------------------------------------|
-| **Train**       | `AMD`, `CNV`, `CSR`, `DME`, `DR`, `DRUSEN`, `MH`, `NORMAL` | e.g., `drusen_train_1001.jpg` |
-| **Validation**  | `AMD`, `CNV`, `CSR`, `DME`, `DR`, `DRUSEN`, `MH`, `NORMAL` | e.g., `drusen_val_1001.jpg`   |
-| **Test**        | `AMD`, `CNV`, `CSR`, `DME`, `DR`, `DRUSEN`, `MH`, `NORMAL` | e.g., `drusen_test_1001.jpg`  |
-
----
-
-## 🔄 Preprocessing & Augmentation
-
-Several preprocessing steps were applied to prepare the dataset for model training:
-- **Image Augmentation**: Techniques like **cropping**, **padding**, and **horizontal flipping** were used to increase the size of the training set and prevent overfitting.
-- **Image Dimensions**: The images in the dataset are of varying sizes, but all are in JPEG format.
-- **Data Splitting**: The dataset was split into 75% training, 15% validation, and 15% testing.
-- **File Naming**: The dataset maintains consistent file naming, such as `<class>_<subset>_<serial_number>.jpg`
-
----
-
-## 📝 How to Use the Dataset
-
-1. **Training**: Use the `train` folder to train your model. Each class has its own subfolder.
-2. **Validation**: Use the `val` folder for model validation.
-3. **Testing**: Use the `test` folder to evaluate your model’s performance.
-
-The dataset is suitable for multi-class classification tasks, particularly in the field of **medical image analysis**.
-
----
-
-## 📑 Citation
-
-If you use this dataset, please cite it as follows:
-
-**APA Citation**  
-Obuli Sai Naren. (2021). *Retinal OCT Image Classification - C8 Dataset* [Data set]. Kaggle. [https://doi.org/10.34740/KAGGLE/DSV/2736749](https://doi.org/10.34740/KAGGLE/DSV/2736749)
-
----
-
-Feel free to download, analyze, and contribute! 📊💻
+## 🚀 Ekspor dan Deployment
+Model tidak hanya dilatih, tetapi juga dipersiapkan untuk ekosistem *production* menggunakan beberapa format:
+1.  **H5 / .keras:** Format kerja standar Keras.
+2.  **SavedModel:** Digunakan untuk *backend deployment* (misal: via `TFSMLayer` atau TensorFlow Serving) untuk melayani *request* API.
+3.  **TensorFlow.js (TFJS):** Model dikonversi ke dalam format Web/JSON agar dapat dieksekusi langsung di sisi klien (*browser*) tanpa membebani server backend.
